@@ -77,6 +77,136 @@ func (dst Bitmap) Range(fn func(x uint32)) {
 	}
 }
 
+// Range iterates over all of the bits set to one in this bitmap.
+func (dst Bitmap) RangeUntil(fn func(x uint32) bool) {
+	for blkAt := 0; blkAt < len(dst); blkAt++ {
+		blk := (dst)[blkAt]
+		if blk == 0x0 {
+			continue // Skip the empty page
+		}
+
+		// Iterate in a 4-bit chunks so we can reduce the number of function calls and skip
+		// the bits for which we should not call our range function.
+		offset := uint32(blkAt << 6)
+		for ; blk > 0; blk = blk >> 4 {
+			switch blk & 0b1111 {
+			case 0b0001:
+				if !fn(offset + 0) {
+					return
+				}
+			case 0b0010:
+				if !fn(offset + 1) {
+					return
+				}
+			case 0b0011:
+				if !fn(offset + 0) {
+					return
+				}
+				if !fn(offset + 1) {
+					return
+				}
+			case 0b0100:
+				if !fn(offset + 2) {
+					return
+				}
+			case 0b0101:
+				if !fn(offset + 0) {
+					return
+				}
+				if !fn(offset + 2) {
+					return
+				}
+			case 0b0110:
+				if !fn(offset + 1) {
+					return
+				}
+				if !fn(offset + 2) {
+					return
+				}
+			case 0b0111:
+				if !fn(offset + 0) {
+					return
+				}
+				if !fn(offset + 1) {
+					return
+				}
+				if !fn(offset + 2) {
+					return
+				}
+			case 0b1000:
+				if !fn(offset + 3) {
+					return
+				}
+			case 0b1001:
+				if !fn(offset + 0) {
+					return
+				}
+				if !fn(offset + 3) {
+					return
+				}
+			case 0b1010:
+				if !fn(offset + 1) {
+					return
+				}
+				if !fn(offset + 3) {
+					return
+				}
+			case 0b1011:
+				if !fn(offset + 0) {
+					return
+				}
+				if !fn(offset + 1) {
+					return
+				}
+				if !fn(offset + 3) {
+					return
+				}
+			case 0b1100:
+				if !fn(offset + 2) {
+					return
+				}
+				if !fn(offset + 3) {
+					return
+				}
+			case 0b1101:
+				if !fn(offset + 0) {
+					return
+				}
+				if !fn(offset + 2) {
+					return
+				}
+				if !fn(offset + 3) {
+					return
+				}
+			case 0b1110:
+				if !fn(offset + 1) {
+					return
+				}
+				if !fn(offset + 2) {
+					return
+				}
+				if !fn(offset + 3) {
+					return
+				}
+			case 0b1111:
+				if !fn(offset + 0) {
+					return
+				}
+				if !fn(offset + 1) {
+					return
+				}
+				if !fn(offset + 2) {
+					return
+				}
+				if !fn(offset + 3) {
+					return
+				}
+			}
+			offset += 4
+		}
+	}
+}
+
 // Filter predicate
 type predicate = func(x uint32) byte
 
